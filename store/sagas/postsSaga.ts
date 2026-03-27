@@ -14,6 +14,12 @@ import {
   fetchPostByIdFailure,
   searchPostsRequest,
   searchPostsSuccess,
+  createPostRequest,
+  createPostSuccess,
+  createPostFailure,
+  updatePostRequest,
+  updatePostSuccess,
+  updatePostFailure,
 } from '../slices/postsSlice'
 import { addNotification } from '../slices/uiSlice'
 import { RootState } from '..'
@@ -128,9 +134,42 @@ function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Genera
   }
 }
 
+function* createPostSaga(action: ReturnType<typeof createPostRequest>): Generator<any, void, any> {
+  try {
+    console.log('createPostSaga called with payload:', action.payload)
+    const response = yield call(mockApi.createPost, action.payload)
+    console.log('createPostSaga response:', response)
+    
+    yield put(createPostSuccess(response.data))
+    toast.success('Post created successfully!')
+  } catch (error: any) {
+    console.error('createPostSaga error:', error)
+    yield put(createPostFailure(error.message))
+    toast.error('Failed to create post')
+  }
+}
+
+function* updatePostSaga(action: ReturnType<typeof updatePostRequest>): Generator<any, void, any> {
+  try {
+    if (!action.payload || !action.payload.id) {
+      throw new Error('Post ID is required')
+    }
+    
+    const response = yield call(mockApi.updatePost, action.payload.id, action.payload)
+    
+    yield put(updatePostSuccess(response.data))
+    toast.success('Post updated successfully!')
+  } catch (error: any) {
+    yield put(updatePostFailure(error.message))
+    toast.error('Failed to update post')
+  }
+}
+
 export default function* postsSaga() {
   yield takeLatest(fetchPostsRequest.type, fetchPostsSaga)
   yield takeLatest(fetchMorePostsRequest.type, fetchMorePostsSaga)
   yield takeLatest(fetchPostByIdRequest.type, fetchPostByIdSaga)
   yield takeLatest(searchPostsRequest.type, searchPostsSaga)
+  yield takeLatest(createPostRequest.type, createPostSaga)
+  yield takeLatest(updatePostRequest.type, updatePostSaga)
 }

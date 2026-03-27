@@ -13,6 +13,7 @@ export interface Post {
   }
   views: number
   image?: string
+  createdAt?: string
 }
 
 interface PostsState {
@@ -101,7 +102,7 @@ const postsSlice = createSlice({
     clearCurrentPost: (state) => {
       state.currentPost = null
     },
-    createPostRequest: (state) => {
+    createPostRequest: (state, action: PayloadAction<Omit<Post, 'id' | 'reactions' | 'views' | 'createdAt'>>) => {
       state.loading = true
       state.error = null
     },
@@ -114,7 +115,7 @@ const postsSlice = createSlice({
       state.loading = false
       state.error = action.payload
     },
-    updatePostRequest: (state) => {
+    updatePostRequest: (state, action: PayloadAction<Post>) => {
       state.loading = true
       state.error = null
     },

@@ -7,18 +7,16 @@ export function middleware(request: NextRequest) {
   const isAuthenticated = !!token
   const { pathname } = request.nextUrl
   
-  // Protected routes
-  const protectedRoutes = ['/dashboard', '/profile', '/create-post']
-  
-  if (protectedRoutes.includes(pathname) && !isAuthenticated) {
+  // Protected routes - only these specific routes need protection
+  if ((pathname.startsWith('/dashboard') || pathname.startsWith('/profile') || pathname.startsWith('/blog/create')) && !isAuthenticated) {
     const url = new URL('/login', request.url)
     url.searchParams.set('redirect', pathname)
     return NextResponse.redirect(url)
   }
   
-  // Auth routes (if already authenticated, redirect to dashboard)
+  // Only redirect from auth routes if not coming from a redirect
   const authRoutes = ['/login', '/signup']
-  if (authRoutes.includes(pathname) && isAuthenticated) {
+  if (authRoutes.includes(pathname) && isAuthenticated && !request.nextUrl.searchParams.has('redirect')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
   
@@ -26,5 +24,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*', '/create-post/:path*', '/login', '/signup'],
+  matcher: ['/dashboard/:path*', '/profile/:path*', '/login', '/signup', '/blog/create/:path*'],
 }

@@ -5,14 +5,18 @@ import { useEffect, useState } from 'react'
 import { usePosts } from '@/hooks/usePosts'
 import { PostCard } from '@/components/blog/PostCard'
 import { Spinner } from '@/components/ui/Spinner'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { SearchBar } from '@/components/blog/SearchBar'
+import { useSimpleAuth } from '@/hooks/useSimpleAuth'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function BlogPage() {
   const { posts, loading, loadingMore, hasMore, error, fetchPosts, searchPosts, fetchMorePosts } = usePosts()
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
+  const { isAuthenticated } = useSimpleAuth()
   const { triggerRef } = useInfiniteScroll({
     hasNextPage: hasMore,
     isFetchingNextPage: loadingMore,
@@ -60,13 +64,24 @@ export default function BlogPage() {
     <div className="container-custom py-12">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Blog Posts
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Discover insights, stories, and perspectives from our community
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-12">
+          <div className="text-center sm:text-left mb-4 sm:mb-0">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Blog Posts
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Discover insights, stories, and perspectives from our community
+            </p>
+          </div>
+          
+          {isAuthenticated && (
+            <Link href="/blog/create">
+              <button className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                <PlusIcon className="h-5 w-5" />
+                Create Post
+              </button>
+            </Link>
+          )}
         </div>
 
         {/* Search Bar */}

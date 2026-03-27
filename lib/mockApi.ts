@@ -10,7 +10,8 @@ const mockPosts = [
     tags: ["nextjs", "redux", "tutorial"],
     reactions: { likes: 42, dislikes: 2 },
     views: 1250,
-    image: "https://picsum.photos/seed/nextjs-redux/400/250.jpg"
+    image: "https://picsum.photos/seed/nextjs-redux/400/250.jpg",
+    createdAt: "2024-01-15T10:00:00Z"
   },
   {
     id: 2,
@@ -20,7 +21,8 @@ const mockPosts = [
     tags: ["typescript", "best-practices", "development"],
     reactions: { likes: 38, dislikes: 1 },
     views: 980,
-    image: "https://picsum.photos/seed/typescript/400/250.jpg"
+    image: "https://picsum.photos/seed/typescript/400/250.jpg",
+    createdAt: "2024-01-20T14:30:00Z"
   },
   {
     id: 3,
@@ -30,7 +32,8 @@ const mockPosts = [
     tags: ["css", "tailwind", "design"],
     reactions: { likes: 56, dislikes: 3 },
     views: 2100,
-    image: "https://picsum.photos/seed/tailwind/400/250.jpg"
+    image: "https://picsum.photos/seed/tailwind/400/250.jpg",
+    createdAt: "2024-01-25T09:15:00Z"
   },
   {
     id: 4,
@@ -40,7 +43,8 @@ const mockPosts = [
     tags: ["react", "hooks", "javascript"],
     reactions: { likes: 71, dislikes: 4 },
     views: 3200,
-    image: "https://picsum.photos/seed/react-hooks/400/250.jpg"
+    image: "https://picsum.photos/seed/react-hooks/400/250.jpg",
+    createdAt: "2024-02-01T16:45:00Z"
   },
   {
     id: 5,
@@ -50,7 +54,8 @@ const mockPosts = [
     tags: ["state-management", "redux", "javascript"],
     reactions: { likes: 29, dislikes: 2 },
     views: 890,
-    image: "https://picsum.photos/seed/state-mgmt/400/250.jpg"
+    image: "https://picsum.photos/seed/state-mgmt/400/250.jpg",
+    createdAt: "2024-02-05T11:20:00Z"
   }
 ];
 
@@ -98,5 +103,42 @@ export const mockApi = {
         limit: 10
       }
     };
+  },
+
+  createPost: async (postData: any) => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log('mockApi.createPost called with:', postData)
+    console.log('Current mockPosts:', mockPosts)
+    
+    const newId = mockPosts.length > 0 ? Math.max(...mockPosts.map(p => p.id)) + 1 : 1
+    console.log('Generated new ID:', newId)
+    
+    const newPost = {
+      id: newId,
+      ...postData,
+      reactions: { likes: 0, dislikes: 0 },
+      views: 0,
+      createdAt: new Date().toISOString()
+    };
+    
+    console.log('New post created:', newPost)
+    mockPosts.unshift(newPost);
+    console.log('Updated mockPosts:', mockPosts)
+    
+    return { data: newPost };
+  },
+
+  updatePost: async (id: number, postData: any) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const postIndex = mockPosts.findIndex(p => p.id === id);
+    if (postIndex === -1) {
+      throw new Error('Post not found');
+    }
+    
+    mockPosts[postIndex] = { ...mockPosts[postIndex], ...postData };
+    
+    return { data: mockPosts[postIndex] };
   }
 };

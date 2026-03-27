@@ -2,26 +2,33 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { usePosts } from '@/hooks/usePosts'
 import { useComments } from '@/hooks/useComments'
 import { CommentItem } from '@/components/comments/CommentItem'
 import { ShareButton } from '@/components/blog/ShareButton'
-import { HeartIcon, ChatBubbleLeftIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { HeartIcon, ChatBubbleLeftIcon, EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import { useState } from 'react'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
+import { useDispatch } from 'react-redux'
+import { updatePostRequest } from '@/store/slices/postsSlice'
 
 export default function BlogPostPage() {
   const { id } = useParams()
+  const router = useRouter()
   const { currentPost, loading, fetchPostById, clearPost } = usePosts()
   const { comments, loading: commentsLoading, fetchComments, addComment } = useComments()
-  const { isAuthenticated } = useSimpleAuth()
+  const { isAuthenticated, user } = useSimpleAuth()
   const [newComment, setNewComment] = useState('')
   const [liked, setLiked] = useState(false)
+  const dispatch = useDispatch()
+  
+  // Check if current user is the author
+  const isAuthor = user && currentPost && user.id === currentPost.userId
   
   useEffect(() => {
     if (id) {
@@ -118,6 +125,31 @@ export default function BlogPostPage() {
                 description={currentPost.body.substring(0, 150)}
               />
             </div>
+            
+            {/* Author Controls */}
+            {isAuthor && (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => router.push(`/blog/${id}/edit`)}
+                  className="flex items-center space-x-1 px-3 py-2 text-sm bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm('Are you sure you want to delete this post?')) {
+                      // TODO: Implement delete functionality
+                      console.log('Delete post:', id)
+                    }
+                  }}
+                  className="flex items-center space-x-1 px-3 py-2 text-sm bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
           
           {/* Post Body */}
@@ -141,7 +173,7 @@ export default function BlogPostPage() {
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
                   rows={3}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-600"
                 />
                 <Button type="submit" className="mt-2">
                   Post Comment
