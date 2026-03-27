@@ -17,6 +17,8 @@ class CacheService {
   }
 
   set<T>(key: string, data: T, expiry: number = this.defaultExpiry): void {
+    if (typeof window === 'undefined') return
+    
     const item: CacheItem<T> = {
       data,
       timestamp: Date.now(),
@@ -26,6 +28,8 @@ class CacheService {
   }
 
   get<T>(key: string): T | null {
+    if (typeof window === 'undefined') return null
+    
     const item = localStorage.getItem(key)
     if (!item) return null
 
@@ -39,14 +43,17 @@ class CacheService {
   }
 
   remove(key: string): void {
+    if (typeof window === 'undefined') return
     localStorage.removeItem(key)
   }
 
   clear(): void {
+    if (typeof window === 'undefined') return
     localStorage.clear()
   }
 
   invalidatePattern(pattern: string): void {
+    if (typeof window === 'undefined') return
     Object.keys(localStorage).forEach((key) => {
       if (key.includes(pattern)) {
         localStorage.removeItem(key)

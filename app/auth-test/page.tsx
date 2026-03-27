@@ -10,13 +10,15 @@ export default function AuthTestPage() {
   const router = useRouter()
   
   useEffect(() => {
-    console.log('AuthTest - Current auth state:', { 
-      isAuthenticated, 
-      isLoading, 
-      user: user?.firstName || 'No user',
-      token: localStorage.getItem('token') || 'No token',
-      expiry: localStorage.getItem('auth_expiry') || 'No expiry'
-    })
+    if (typeof window !== 'undefined') {
+      console.log('AuthTest - Current auth state:', { 
+        isAuthenticated, 
+        isLoading, 
+        user: user?.firstName || 'No user',
+        token: localStorage.getItem('token') || 'No token',
+        expiry: localStorage.getItem('auth_expiry') || 'No expiry'
+      })
+    }
   }, [user, isAuthenticated, isLoading])
 
   return (
@@ -45,9 +47,9 @@ export default function AuthTestPage() {
               LocalStorage Data
             </h3>
             <div className="space-y-2">
-              <p><strong>Token:</strong> {localStorage.getItem('token') || 'None'}</p>
-              <p><strong>User Data:</strong> {localStorage.getItem('user') || 'None'}</p>
-              <p><strong>Expiry:</strong> {localStorage.getItem('auth_expiry') || 'None'}</p>
+              <p><strong>Token:</strong> {typeof window !== 'undefined' ? localStorage.getItem('token') || 'None' : 'SSR'}</p>
+              <p><strong>User Data:</strong> {typeof window !== 'undefined' ? localStorage.getItem('user') || 'None' : 'SSR'}</p>
+              <p><strong>Expiry:</strong> {typeof window !== 'undefined' ? localStorage.getItem('auth_expiry') || 'None' : 'SSR'}</p>
             </div>
           </div>
           

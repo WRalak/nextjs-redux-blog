@@ -49,13 +49,13 @@ export const usePosts = () => {
   }
 
   const createPost = (postData: any) => {
-    dispatch(createPostRequest())
+    dispatch(createPostRequest(postData))
     // TODO: Implement actual API call
     console.log('Creating post:', postData)
   }
 
   const updatePost = (id: number, postData: any) => {
-    dispatch(updatePostRequest())
+    dispatch(updatePostRequest({ id, ...postData }))
     // TODO: Implement actual API call
     console.log('Updating post:', { id, ...postData })
   }
