@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# README.md
 
-## Getting Started
+# Modern Blog - Next.js Redux-Saga Application
 
-First, run the development server:
+A full-featured blog application built with Next.js 14, Redux Toolkit, and Redux-Saga, demonstrating modern React development patterns, server-side rendering, state management, and side effect handling.
 
+## 🚀 Live Demo
+
+[View Live Demo](https://your-demo-url.vercel.app)
+
+## 📋 Features
+
+### Core Features
+- ✅ Next.js 14 with App Router
+- ✅ Redux Toolkit for state management
+- ✅ Redux-Saga for side effects
+- ✅ TypeScript for type safety
+- ✅ Tailwind CSS for styling
+- ✅ Authentication with JWT
+- ✅ Protected routes
+- ✅ Blog posts listing with pagination
+- ✅ Blog post details with comments
+- ✅ Search functionality
+- ✅ Dark mode support
+- ✅ Responsive design
+
+### Advanced Features
+- ✅ Server-side rendering (SSR) for blog pages
+- ✅ Static generation (SSG) where appropriate
+- ✅ Image optimization with next/image
+- ✅ Font optimization with next/font
+- ✅ Metadata API for SEO
+- ✅ Local storage caching with 1-hour expiry
+- ✅ Offline support for cached content
+- ✅ Code splitting with next/dynamic
+- ✅ Toast notifications
+- ✅ Skeleton loaders
+- ✅ Error boundaries
+- ✅ Loading states
+- ✅ Form validation
+
+## 🛠️ Technologies Used
+
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **State Management**: Redux Toolkit, Redux-Saga
+- **Styling**: Tailwind CSS
+- **HTTP Client**: Axios
+- **Icons**: Heroicons
+- **Notifications**: React Hot Toast
+- **Date Handling**: date-fns
+- **Theme**: next-themes
+
+## 📦 Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+git clone https://github.com/yourusername/nextjs-redux-blog.git
+cd nextjs-redux-blog
