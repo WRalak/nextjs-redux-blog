@@ -6,8 +6,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { usePosts } from '@/hooks/usePosts'
 import { useComments } from '@/hooks/useComments'
-import { CommentItem } from '@/components/comments/CommentItem'
-import { ShareButton } from '@/components/blog/ShareButton'
 import { HeartIcon, ChatBubbleLeftIcon, EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import { useState } from 'react'
@@ -16,6 +14,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { useDispatch } from 'react-redux'
 import { updatePostRequest } from '@/store/slices/postsSlice'
+import { LazyLoad, LazyCommentItem, LazyShareButton } from '@/components/ui/LazyLoad'
 
 export default function BlogPostPage() {
   const { id } = useParams()
@@ -119,11 +118,13 @@ export default function BlogPostPage() {
                 <EyeIcon className="h-6 w-6" />
                 <span>{currentPost.views}</span>
               </div>
-              <ShareButton
-                url={typeof window !== 'undefined' ? window.location.href : ''}
-                title={currentPost.title}
-                description={currentPost.body.substring(0, 150)}
-              />
+              <LazyLoad>
+                <LazyShareButton
+                  url={typeof window !== 'undefined' ? window.location.href : ''}
+                  title={currentPost.title}
+                  description={currentPost.body.substring(0, 150)}
+                />
+              </LazyLoad>
             </div>
             
             {/* Author Controls */}
@@ -193,11 +194,12 @@ export default function BlogPostPage() {
             ) : (
               <div className="space-y-6">
                 {comments.map((comment) => (
-                  <CommentItem
-                    key={comment.id}
-                    comment={comment}
-                    onReply={handleReply}
-                  />
+                  <LazyLoad key={comment.id}>
+                    <LazyCommentItem
+                      comment={comment}
+                      onReply={handleReply}
+                    />
+                  </LazyLoad>
                 ))}
               </div>
             )}

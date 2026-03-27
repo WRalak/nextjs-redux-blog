@@ -3,14 +3,13 @@
 
 import { useEffect, useState } from 'react'
 import { usePosts } from '@/hooks/usePosts'
-import { PostCard } from '@/components/blog/PostCard'
 import { Spinner } from '@/components/ui/Spinner'
 import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
-import { SearchBar } from '@/components/blog/SearchBar'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { LazyLoad, LazyPostCard, LazySearchBar } from '@/components/ui/LazyLoad'
 
 export default function BlogPage() {
   const { posts, loading, loadingMore, hasMore, error, fetchPosts, searchPosts, fetchMorePosts } = usePosts()
@@ -86,7 +85,9 @@ export default function BlogPage() {
 
         {/* Search Bar */}
         <div className="mb-8">
-          <SearchBar />
+          <LazyLoad>
+            <LazySearchBar />
+          </LazyLoad>
         </div>
 
         {/* Posts Grid */}
@@ -107,7 +108,9 @@ export default function BlogPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <LazyLoad key={post.id}>
+                <LazyPostCard post={post} />
+              </LazyLoad>
             ))}
           </div>
         )}

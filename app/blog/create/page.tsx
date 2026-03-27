@@ -1,9 +1,9 @@
 'use client'
 
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
-import { CreatePost } from '@/components/blog/CreatePost'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { LazyLoad, LazyCreatePost } from '@/components/ui/LazyLoad'
 
 export default function CreatePostPage() {
   const { isAuthenticated, isLoading } = useSimpleAuth()
@@ -37,7 +37,9 @@ export default function CreatePostPage() {
 
   return (
     <div className="container-custom py-12">
-      <CreatePost />
+      <LazyLoad>
+        <LazyCreatePost />
+      </LazyLoad>
     </div>
   )
 }
