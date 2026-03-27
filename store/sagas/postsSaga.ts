@@ -6,6 +6,9 @@ import {
   fetchPostsRequest,
   fetchPostsSuccess,
   fetchPostsFailure,
+  fetchMorePostsRequest,
+  fetchMorePostsSuccess,
+  fetchMorePostsFailure,
   fetchPostByIdRequest,
   fetchPostByIdSuccess,
   fetchPostByIdFailure,
@@ -86,6 +89,24 @@ function* fetchPostByIdSaga(action: ReturnType<typeof fetchPostByIdRequest>): Ge
   }
 }
 
+function* fetchMorePostsSaga(): Generator<any, void, any> {
+  try {
+    const state = yield select((state: RootState) => state.posts)
+    const { skip, limit } = state
+    
+    const response = yield call(
+      axios.get,
+      `${API_BASE_URL}/posts`,
+      { params: { skip, limit } }
+    )
+    
+    yield put(fetchMorePostsSuccess({ posts: response.data.posts, total: response.data.total }))
+  } catch (error: any) {
+    yield put(fetchMorePostsFailure(error.message))
+    toast.error('Failed to load more posts')
+  }
+}
+
 function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Generator<any, void, any> {
   try {
     const query = action.payload
@@ -110,6 +131,7 @@ function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Genera
 
 export default function* postsSaga() {
   yield takeLatest(fetchPostsRequest.type, fetchPostsSaga)
+  yield takeLatest(fetchMorePostsRequest.type, fetchMorePostsSaga)
   yield takeLatest(fetchPostByIdRequest.type, fetchPostByIdSaga)
   yield takeLatest(searchPostsRequest.type, searchPostsSaga)
 }

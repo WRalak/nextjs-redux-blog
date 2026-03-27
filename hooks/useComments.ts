@@ -11,8 +11,8 @@ export const useComments = () => {
     dispatch(fetchCommentsRequest(postId))
   }
 
-  const addComment = (postId: number, body: string) => {
-    dispatch(addCommentRequest({ postId, body }))
+  const addComment = (postId: number, body: string, parentId?: number) => {
+    dispatch(addCommentRequest({ postId, body, parentId }))
   }
 
   const resetComments = () => {

@@ -10,6 +10,9 @@ export interface Comment {
     username: string
     fullName: string
   }
+  parentId?: number
+  replies?: Comment[]
+  createdAt: string
 }
 
 interface CommentsState {
@@ -40,12 +43,29 @@ const commentsSlice = createSlice({
       state.loading = false
       state.error = action.payload
     },
-    addCommentRequest: (state, action: PayloadAction<{ postId: number; body: string }>) => {
+    addCommentRequest: (state, action: PayloadAction<{ postId: number; body: string; parentId?: number }>) => {
       state.loading = true
     },
     addCommentSuccess: (state, action: PayloadAction<Comment>) => {
       state.loading = false
-      state.comments.unshift(action.payload)
+      if (action.payload.parentId) {
+        // Add as reply
+        const addReplyToComment = (comments: Comment[], newComment: Comment): Comment[] => {
+          return comments.map(comment => {
+            if (comment.id === newComment.parentId) {
+              return {
+                ...comment,
+                replies: [...(comment.replies || []), newComment]
+              }
+            }
+            return comment
+          })
+        }
+        state.comments = addReplyToComment(state.comments, action.payload)
+      } else {
+        // Add as top-level comment
+        state.comments.unshift(action.payload)
+      }
     },
     addCommentFailure: (state, action: PayloadAction<string>) => {
       state.loading = false

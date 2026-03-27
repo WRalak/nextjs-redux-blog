@@ -4,14 +4,20 @@
 import { useEffect, useState } from 'react'
 import { usePosts } from '@/hooks/usePosts'
 import { PostCard } from '@/components/blog/PostCard'
-import { Pagination } from '@/components/blog/Pagination'
 import { Spinner } from '@/components/ui/Spinner'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { SearchBar } from '@/components/blog/SearchBar'
 
 export default function BlogPage() {
-  const { posts, loading, error, totalPages, currentPage, fetchPosts, changePage, searchPosts } = usePosts()
+  const { posts, loading, loadingMore, hasMore, error, fetchPosts, searchPosts, fetchMorePosts } = usePosts()
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
+  const { triggerRef } = useInfiniteScroll({
+    hasNextPage: hasMore,
+    isFetchingNextPage: loadingMore,
+    fetchNextPage: fetchMorePosts,
+  })
   
   useEffect(() => {
     fetchPosts(1)
@@ -52,55 +58,61 @@ export default function BlogPage() {
   
   return (
     <div className="container-custom py-12">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Blog Posts
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Explore our collection of articles and stories
-        </p>
-      </div>
-      
-      {/* Search Bar */}
-      <div className="mb-8">
-        <div className="relative max-w-md">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search posts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-      </div>
-      
-      {/* Posts Grid */}
-      {posts.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600 dark:text-gray-300 text-lg">
-            No posts found.
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Blog Posts
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Discover insights, stories, and perspectives from our community
           </p>
         </div>
-      ) : (
-        <>
+
+        {/* Search Bar */}
+        <div className="mb-8">
+          <SearchBar />
+        </div>
+
+        {/* Posts Grid */}
+        {loading && posts.length === 0 ? (
+          <div className="flex justify-center py-12">
+            <Spinner size="lg" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 dark:text-gray-300">
+              No posts found. Try adjusting your search or check back later!
+            </p>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>
-          
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={changePage}
-            />
-          )}
-        </>
-      )}
+        )}
+
+        {/* Load More Trigger */}
+        {!loading && hasMore && (
+          <div ref={triggerRef} className="flex justify-center py-8">
+            {loadingMore && <Spinner />}
+          </div>
+        )}
+
+        {/* No More Posts */}
+        {!loading && !hasMore && posts.length > 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-600 dark:text-gray-300">
+              You've reached the end of the posts!
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

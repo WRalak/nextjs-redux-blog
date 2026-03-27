@@ -22,6 +22,8 @@ interface PostsState {
   skip: number
   limit: number
   loading: boolean
+  loadingMore: boolean
+  hasMore: boolean
   error: string | null
   searchQuery: string
 }
@@ -33,6 +35,8 @@ const initialState: PostsState = {
   skip: 0,
   limit: 10,
   loading: false,
+  loadingMore: false,
+  hasMore: true,
   error: null,
   searchQuery: '',
 }
@@ -49,6 +53,22 @@ const postsSlice = createSlice({
       state.loading = false
       state.posts = action.payload.posts
       state.total = action.payload.total
+      state.hasMore = state.skip + state.limit < action.payload.total
+    },
+    fetchMorePostsRequest: (state) => {
+      state.loadingMore = true
+      state.error = null
+    },
+    fetchMorePostsSuccess: (state, action: PayloadAction<{ posts: Post[]; total: number }>) => {
+      state.loadingMore = false
+      state.posts = [...state.posts, ...action.payload.posts]
+      state.total = action.payload.total
+      state.skip = state.skip + state.limit
+      state.hasMore = state.skip + state.limit < action.payload.total
+    },
+    fetchMorePostsFailure: (state, action: PayloadAction<string>) => {
+      state.loadingMore = false
+      state.error = action.payload
     },
     fetchPostsFailure: (state, action: PayloadAction<string>) => {
       state.loading = false
@@ -81,6 +101,35 @@ const postsSlice = createSlice({
     clearCurrentPost: (state) => {
       state.currentPost = null
     },
+    createPostRequest: (state) => {
+      state.loading = true
+      state.error = null
+    },
+    createPostSuccess: (state, action: PayloadAction<Post>) => {
+      state.loading = false
+      state.posts.unshift(action.payload)
+      state.total += 1
+    },
+    createPostFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false
+      state.error = action.payload
+    },
+    updatePostRequest: (state) => {
+      state.loading = true
+      state.error = null
+    },
+    updatePostSuccess: (state, action: PayloadAction<Post>) => {
+      state.loading = false
+      const index = state.posts.findIndex(post => post.id === action.payload.id)
+      if (index !== -1) {
+        state.posts[index] = action.payload
+      }
+      state.currentPost = action.payload
+    },
+    updatePostFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false
+      state.error = action.payload
+    },
   },
 })
 
@@ -88,6 +137,9 @@ export const {
   fetchPostsRequest,
   fetchPostsSuccess,
   fetchPostsFailure,
+  fetchMorePostsRequest,
+  fetchMorePostsSuccess,
+  fetchMorePostsFailure,
   fetchPostByIdRequest,
   fetchPostByIdSuccess,
   fetchPostByIdFailure,
@@ -95,6 +147,12 @@ export const {
   searchPostsSuccess,
   setCurrentPage,
   clearCurrentPost,
+  createPostRequest,
+  createPostSuccess,
+  createPostFailure,
+  updatePostRequest,
+  updatePostSuccess,
+  updatePostFailure,
 } = postsSlice.actions
 
 export default postsSlice.reducer

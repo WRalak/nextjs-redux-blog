@@ -4,15 +4,16 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
 import { MoonIcon, SunIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
-  const { theme, setTheme } = useTheme()
+  const { theme, toggleTheme } = useTheme()
   const { isAuthenticated, user, logout } = useAuth()
 
   useEffect(() => {
@@ -24,7 +25,11 @@ export const Navbar = () => {
     { name: 'Blog', href: '/blog' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
-    ...(isAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
+    ...(isAuthenticated ? [
+      { name: 'Dashboard', href: '/dashboard' },
+      { name: 'Profile', href: '/profile' },
+      { name: 'Create Post', href: '/create-post' }
+    ] : []),
   ]
 
   const isActive = (href: string) => pathname === href
@@ -60,19 +65,7 @@ export const Navbar = () => {
 
           <div className="hidden md:flex items-center space-x-4">
             {/* Theme Toggle */}
-            {mounted && (
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                aria-label="Toggle theme"
-              >
-                {theme === 'dark' ? (
-                  <SunIcon className="h-5 w-5 text-yellow-500" />
-                ) : (
-                  <MoonIcon className="h-5 w-5 text-gray-700" />
-                )}
-              </button>
-            )}
+            {mounted && <ThemeToggle />}
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">

@@ -6,12 +6,14 @@ import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import { usePosts } from '@/hooks/usePosts'
 import { useComments } from '@/hooks/useComments'
-import { Spinner } from '@/components/ui/Spinner'
-import { Button } from '@/components/ui/Button'
+import { CommentItem } from '@/components/comments/CommentItem'
+import { ShareButton } from '@/components/blog/ShareButton'
 import { HeartIcon, ChatBubbleLeftIcon, EyeIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { Spinner } from '@/components/ui/Spinner'
+import { Button } from '@/components/ui/Button'
 
 export default function BlogPostPage() {
   const { id } = useParams()
@@ -35,9 +37,13 @@ export default function BlogPostPage() {
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (newComment.trim()) {
-      await addComment(Number(id), newComment)
+      await addComment(Number(id), newComment, undefined)
       setNewComment('')
     }
+  }
+
+  const handleReply = async (parentId: number, content: string) => {
+    await addComment(Number(id), content, parentId)
   }
   
   if (loading || !currentPost) {
@@ -106,6 +112,11 @@ export default function BlogPostPage() {
                 <EyeIcon className="h-6 w-6" />
                 <span>{currentPost.views}</span>
               </div>
+              <ShareButton
+                url={typeof window !== 'undefined' ? window.location.href : ''}
+                title={currentPost.title}
+                description={currentPost.body.substring(0, 150)}
+              />
             </div>
           </div>
           
@@ -150,19 +161,11 @@ export default function BlogPostPage() {
             ) : (
               <div className="space-y-6">
                 {comments.map((comment) => (
-                  <div
+                  <CommentItem
                     key={comment.id}
-                    className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {comment.user?.fullName || 'Anonymous User'}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 dark:text-gray-300">
-                      {comment.body}
-                    </p>
-                  </div>
+                    comment={comment}
+                    onReply={handleReply}
+                  />
                 ))}
               </div>
             )}

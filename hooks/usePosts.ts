@@ -3,15 +3,22 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/store'
 import {
   fetchPostsRequest,
+  fetchMorePostsRequest,
   fetchPostByIdRequest,
   searchPostsRequest,
   setCurrentPage,
   clearCurrentPost,
+  createPostRequest,
+  createPostSuccess,
+  createPostFailure,
+  updatePostRequest,
+  updatePostSuccess,
+  updatePostFailure,
 } from '@/store/slices/postsSlice'
 
 export const usePosts = () => {
   const dispatch = useDispatch()
-  const { posts, currentPost, total, loading, error, skip, limit, searchQuery } = useSelector(
+  const { posts, currentPost, total, loading, loadingMore, hasMore, error, skip, limit, searchQuery } = useSelector(
     (state: RootState) => state.posts
   )
 
@@ -37,11 +44,29 @@ export const usePosts = () => {
     dispatch(clearCurrentPost())
   }
 
+  const fetchMorePosts = () => {
+    dispatch(fetchMorePostsRequest())
+  }
+
+  const createPost = (postData: any) => {
+    dispatch(createPostRequest())
+    // TODO: Implement actual API call
+    console.log('Creating post:', postData)
+  }
+
+  const updatePost = (id: number, postData: any) => {
+    dispatch(updatePostRequest())
+    // TODO: Implement actual API call
+    console.log('Updating post:', { id, ...postData })
+  }
+
   return {
     posts,
     currentPost,
     total,
     loading,
+    loadingMore,
+    hasMore,
     error,
     searchQuery,
     currentPage: Math.floor(skip / limit) + 1,
@@ -51,5 +76,8 @@ export const usePosts = () => {
     searchPosts,
     changePage,
     clearPost,
+    fetchMorePosts,
+    createPost,
+    updatePost,
   }
 }

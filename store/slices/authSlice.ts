@@ -8,6 +8,7 @@ interface User {
   firstName: string
   lastName: string
   image?: string
+  bio?: string
 }
 
 interface AuthState {
