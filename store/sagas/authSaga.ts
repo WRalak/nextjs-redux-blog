@@ -17,9 +17,9 @@ interface LoginResponse {
   image?: string
 }
 
-function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, void, LoginResponse> {
+function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, void, any> {
   try {
-    const response: LoginResponse = yield call(
+    const response = yield call(
       axios.post,
       `${API_BASE_URL}/auth/login`,
       {
@@ -30,23 +30,23 @@ function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, voi
       {
         headers: { 'Content-Type': 'application/json' },
       }
-    ).then(res => res.data)
+    )
 
     const user = {
-      id: response.id,
-      username: response.username,
-      email: response.email,
-      firstName: response.firstName,
-      lastName: response.lastName,
-      image: response.image,
+      id: response.data.id,
+      username: response.data.username,
+      email: response.data.email,
+      firstName: response.data.firstName,
+      lastName: response.data.lastName,
+      image: response.data.image,
     }
 
     // Save to localStorage
-    localStorage.setItem('token', response.token)
+    localStorage.setItem('token', response.data.token)
     localStorage.setItem('user', JSON.stringify(user))
-    localStorage.setItem('auth_expiry', Date.now() + 30 * 60 * 1000).toString()
+    localStorage.setItem('auth_expiry', (Date.now() + 30 * 60 * 1000).toString())
 
-    yield put(loginSuccess({ user, token: response.token }))
+    yield put(loginSuccess({ user, token: response.data.token }))
     toast.success('Login successful!')
     yield put(addNotification({ message: 'Welcome back!', type: 'success' }))
     

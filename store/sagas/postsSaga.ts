@@ -24,7 +24,7 @@ interface PostsResponse {
   limit: number
 }
 
-function* fetchPostsSaga(action: ReturnType<typeof fetchPostsRequest>): Generator<any, void, PostsResponse> {
+function* fetchPostsSaga(action: ReturnType<typeof fetchPostsRequest>): Generator<any, void, any> {
   try {
     const { skip = 0, limit = 10 } = action.payload
     
@@ -38,19 +38,19 @@ function* fetchPostsSaga(action: ReturnType<typeof fetchPostsRequest>): Generato
       }
     }
     
-    const response: PostsResponse = yield call(
+    const response = yield call(
       axios.get,
       `${API_BASE_URL}/posts`,
       { params: { skip, limit } }
-    ).then(res => res.data)
+    )
     
     // Cache the response
     localStorage.setItem(`posts_${skip}_${limit}`, JSON.stringify({
-      data: response,
+      data: response.data,
       timestamp: Date.now(),
     }))
     
-    yield put(fetchPostsSuccess({ posts: response.posts, total: response.total }))
+    yield put(fetchPostsSuccess({ posts: response.data.posts, total: response.data.total }))
   } catch (error: any) {
     yield put(fetchPostsFailure(error.message))
     toast.error('Failed to fetch posts')
@@ -71,22 +71,22 @@ function* fetchPostByIdSaga(action: ReturnType<typeof fetchPostByIdRequest>): Ge
       }
     }
     
-    const response = yield call(axios.get, `${API_BASE_URL}/posts/${id}`).then(res => res.data)
+    const response = yield call(axios.get, `${API_BASE_URL}/posts/${id}`)
     
     // Cache the response
     localStorage.setItem(`post_${id}`, JSON.stringify({
-      data: response,
+      data: response.data,
       timestamp: Date.now(),
     }))
     
-    yield put(fetchPostByIdSuccess(response))
+    yield put(fetchPostByIdSuccess(response.data))
   } catch (error: any) {
     yield put(fetchPostByIdFailure(error.message))
     toast.error('Failed to fetch post')
   }
 }
 
-function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Generator<any, void, PostsResponse> {
+function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Generator<any, void, any> {
   try {
     const query = action.payload
     
@@ -95,13 +95,13 @@ function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Genera
       return
     }
     
-    const response: PostsResponse = yield call(
+    const response = yield call(
       axios.get,
       `${API_BASE_URL}/posts/search`,
       { params: { q: query } }
-    ).then(res => res.data)
+    )
     
-    yield put(searchPostsSuccess({ posts: response.posts, total: response.total }))
+    yield put(searchPostsSuccess({ posts: response.data.posts, total: response.data.total }))
   } catch (error: any) {
     yield put(fetchPostsFailure(error.message))
     toast.error('Search failed')
