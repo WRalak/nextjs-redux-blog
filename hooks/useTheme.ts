@@ -6,14 +6,18 @@ export type Theme = 'light' | 'dark' | 'system'
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('system')
   const [isDark, setIsDark] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     // Get theme from localStorage
     const savedTheme = localStorage.getItem('theme') as Theme || 'system'
     setTheme(savedTheme)
   }, [])
 
   useEffect(() => {
+    if (!mounted) return
+    
     const root = window.document.documentElement
     
     // Remove previous theme classes
@@ -50,7 +54,7 @@ export function useTheme() {
       mediaQuery.addEventListener('change', handleChange)
       return () => mediaQuery.removeEventListener('change', handleChange)
     }
-  }, [theme])
+  }, [theme, mounted])
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
@@ -66,6 +70,7 @@ export function useTheme() {
   return {
     theme,
     isDark,
+    mounted,
     toggleTheme,
     setThemeMode,
     themeLabel: theme === 'system' ? 'System' : theme.charAt(0).toUpperCase() + theme.slice(1)

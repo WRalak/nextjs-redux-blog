@@ -18,9 +18,9 @@ function* fetchComments(action: ReturnType<typeof fetchCommentsRequest>): Genera
   }
 }
 
-function* addComment(action: { payload: { postId: number; comment: string; parentId?: number } }): Generator<any, void, any> {
+function* addComment(action: ReturnType<typeof addCommentRequest>): Generator<any, void, any> {
   try {
-    const response = yield call(commentsApi.addComment, action.payload.postId, action.payload.comment, action.payload.parentId)
+    const response = yield call(commentsApi.addComment, action.payload.postId, action.payload.body, action.payload.parentId)
     yield put(addCommentSuccess(response.data))
   } catch (error) {
     yield put(addCommentFailure(error instanceof Error ? error.message : 'Failed to add comment'))

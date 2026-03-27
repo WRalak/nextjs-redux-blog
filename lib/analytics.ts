@@ -21,10 +21,14 @@ class Analytics {
 
   private constructor() {
     this.events = []
-    this.initializeTracking()
+    if (typeof window !== 'undefined') {
+      this.initializeTracking()
+    }
   }
 
   private initializeTracking() {
+    if (typeof window === 'undefined') return
+    
     // Initialize page view tracking
     this.trackPageView(window.location.pathname)
     
@@ -54,7 +58,8 @@ class Analytics {
   }
 
   trackUserEngagement() {
-    // Track scroll depth
+    if (typeof window === 'undefined') return
+    
     let maxScrollDepth = 0
     const trackScroll = () => {
       const scrollDepth = Math.round(
@@ -68,7 +73,6 @@ class Analytics {
 
     window.addEventListener('scroll', trackScroll, { passive: true })
 
-    // Track time on page
     let startTime = Date.now()
     window.addEventListener('beforeunload', () => {
       const timeSpent = Math.round((Date.now() - startTime) / 1000)
@@ -105,6 +109,8 @@ class Analytics {
   }
 
   trackPerformance() {
+    if (typeof window === 'undefined') return
+    
     // Track page load time
     if (window.performance) {
       window.addEventListener('load', () => {

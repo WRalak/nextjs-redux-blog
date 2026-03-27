@@ -1,8 +1,8 @@
 // store/sagas/authSaga.ts
 import { call, put, takeLatest, delay } from 'redux-saga/effects'
-import axios from 'axios'
+import { mockAuthApi } from '@/lib/mockAuthApi'
 import toast from 'react-hot-toast'
-import { loginRequest, loginSuccess, loginFailure, logoutSuccess } from '../slices/authSlice'
+import { loginRequest, loginSuccess, loginFailure, logoutRequest, logoutSuccess } from '../slices/authSlice'
 import { addNotification } from '../slices/uiSlice'
 
 const API_BASE_URL = 'https://dummyjson.com'
@@ -19,18 +19,7 @@ interface LoginResponse {
 
 function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, void, any> {
   try {
-    const response = yield call(
-      axios.post,
-      `${API_BASE_URL}/auth/login`,
-      {
-        username: action.payload.username,
-        password: action.payload.password,
-        expiresInMins: 30,
-      },
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
+    const response = yield call(mockAuthApi.login, action.payload.username, action.payload.password)
 
     const user = {
       id: response.data.id,
@@ -53,7 +42,7 @@ function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, voi
     // Redirect to dashboard
     window.location.href = '/dashboard'
   } catch (error: any) {
-    const errorMessage = error.response?.data?.message || 'Login failed. Please try again.'
+    const errorMessage = error.message || 'Login failed. Please try again.'
     yield put(loginFailure(errorMessage))
     toast.error(errorMessage)
     yield put(addNotification({ message: errorMessage, type: 'error' }))
@@ -75,6 +64,9 @@ function* logoutSaga(): Generator<any, void, any> {
 }
 
 function* checkAuthSaga(): Generator<any, void, any> {
+  // Only check auth on client side
+  if (typeof window === 'undefined') return
+  
   const token = localStorage.getItem('token')
   const expiry = localStorage.getItem('auth_expiry')
   
@@ -83,12 +75,12 @@ function* checkAuthSaga(): Generator<any, void, any> {
     yield put(loginSuccess({ user, token }))
   } else if (token && expiry && Date.now() >= parseInt(expiry)) {
     // Token expired
-    yield call(logoutSaga)
+    yield put(logoutRequest())
   }
 }
 
 export default function* authSaga() {
   yield takeLatest(loginRequest.type, loginSaga)
-  yield takeLatest('auth/logoutRequest', logoutSaga)
+  yield takeLatest(logoutRequest.type, logoutSaga)
   yield call(checkAuthSaga)
 }

@@ -1,6 +1,6 @@
 // store/sagas/postsSaga.ts
 import { call, put, takeLatest, select } from 'redux-saga/effects'
-import axios from 'axios'
+import { mockApi } from '@/lib/mockApi'
 import toast from 'react-hot-toast'
 import {
   fetchPostsRequest,
@@ -18,7 +18,6 @@ import {
 import { addNotification } from '../slices/uiSlice'
 import { RootState } from '..'
 
-const API_BASE_URL = 'https://dummyjson.com'
 
 interface PostsResponse {
   posts: any[]
@@ -31,8 +30,12 @@ function* fetchPostsSaga(action: ReturnType<typeof fetchPostsRequest>): Generato
   try {
     const { skip = 0, limit = 10 } = action.payload
     
-    // Check cache first
-    const cached = localStorage.getItem(`posts_${skip}_${limit}`)
+    // Check cache first (only on client side)
+    let cached = null
+    if (typeof window !== 'undefined') {
+      cached = localStorage.getItem(`posts_${skip}_${limit}`)
+    }
+    
     if (cached) {
       const { data, timestamp } = JSON.parse(cached)
       if (Date.now() - timestamp < 3600000) { // 1 hour cache
@@ -41,17 +44,15 @@ function* fetchPostsSaga(action: ReturnType<typeof fetchPostsRequest>): Generato
       }
     }
     
-    const response = yield call(
-      axios.get,
-      `${API_BASE_URL}/posts`,
-      { params: { skip, limit } }
-    )
+    const response = yield call(mockApi.getPosts, skip, limit)
     
-    // Cache the response
-    localStorage.setItem(`posts_${skip}_${limit}`, JSON.stringify({
-      data: response.data,
-      timestamp: Date.now(),
-    }))
+    // Cache the response (only on client side)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`posts_${skip}_${limit}`, JSON.stringify({
+        data: response.data,
+        timestamp: Date.now(),
+      }))
+    }
     
     yield put(fetchPostsSuccess({ posts: response.data.posts, total: response.data.total }))
   } catch (error: any) {
@@ -64,8 +65,12 @@ function* fetchPostByIdSaga(action: ReturnType<typeof fetchPostByIdRequest>): Ge
   try {
     const id = action.payload
     
-    // Check cache
-    const cached = localStorage.getItem(`post_${id}`)
+    // Check cache (only on client side)
+    let cached = null
+    if (typeof window !== 'undefined') {
+      cached = localStorage.getItem(`post_${id}`)
+    }
+    
     if (cached) {
       const { data, timestamp } = JSON.parse(cached)
       if (Date.now() - timestamp < 3600000) {
@@ -74,13 +79,15 @@ function* fetchPostByIdSaga(action: ReturnType<typeof fetchPostByIdRequest>): Ge
       }
     }
     
-    const response = yield call(axios.get, `${API_BASE_URL}/posts/${id}`)
+    const response = yield call(mockApi.getPostById, id)
     
-    // Cache the response
-    localStorage.setItem(`post_${id}`, JSON.stringify({
-      data: response.data,
-      timestamp: Date.now(),
-    }))
+    // Cache response (only on client side)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`post_${id}`, JSON.stringify({
+        data: response.data,
+        timestamp: Date.now(),
+      }))
+    }
     
     yield put(fetchPostByIdSuccess(response.data))
   } catch (error: any) {
@@ -94,11 +101,7 @@ function* fetchMorePostsSaga(): Generator<any, void, any> {
     const state = yield select((state: RootState) => state.posts)
     const { skip, limit } = state
     
-    const response = yield call(
-      axios.get,
-      `${API_BASE_URL}/posts`,
-      { params: { skip, limit } }
-    )
+    const response = yield call(mockApi.getPosts, skip, limit)
     
     yield put(fetchMorePostsSuccess({ posts: response.data.posts, total: response.data.total }))
   } catch (error: any) {
@@ -116,11 +119,7 @@ function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Genera
       return
     }
     
-    const response = yield call(
-      axios.get,
-      `${API_BASE_URL}/posts/search`,
-      { params: { q: query } }
-    )
+    const response = yield call(mockApi.searchPosts, query)
     
     yield put(searchPostsSuccess({ posts: response.data.posts, total: response.data.total }))
   } catch (error: any) {
