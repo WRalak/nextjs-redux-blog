@@ -9,9 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "next": "16.2.1",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "@reduxjs/toolkit": "^2.11.2",
+    "axios": "^1.13.6",
+    "date-fns": "^4.1.0",
+    "next": "^14.0.4",
+    "next-themes": "^0.4.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.6.0",
+    "react-redux": "^9.2.0",
+    "redux-saga": "^1.4.2",
+    "reselect": "^5.1.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
