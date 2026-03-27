@@ -30,17 +30,21 @@ function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, voi
       image: response.data.image,
     }
 
-    // Save to localStorage
-    localStorage.setItem('token', response.data.token)
-    localStorage.setItem('user', JSON.stringify(user))
-    localStorage.setItem('auth_expiry', (Date.now() + 30 * 60 * 1000).toString())
+    // Save to localStorage (only on client side)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', response.data.token)
+      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('auth_expiry', (Date.now() + 30 * 60 * 1000).toString())
+    }
 
     yield put(loginSuccess({ user, token: response.data.token }))
     toast.success('Login successful!')
     yield put(addNotification({ message: 'Welcome back!', type: 'success' }))
     
-    // Redirect to dashboard
-    window.location.href = '/dashboard'
+    // Redirect to dashboard (only on client side)
+    if (typeof window !== 'undefined') {
+      window.location.href = '/dashboard'
+    }
   } catch (error: any) {
     const errorMessage = error.message || 'Login failed. Please try again.'
     yield put(loginFailure(errorMessage))
@@ -51,13 +55,18 @@ function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, voi
 
 function* logoutSaga(): Generator<any, void, any> {
   try {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    localStorage.removeItem('auth_expiry')
+    // Remove from localStorage (only on client side)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('auth_expiry')
+    }
     yield put(logoutSuccess())
     toast.success('Logged out successfully')
     yield put(addNotification({ message: 'You have been logged out', type: 'info' }))
-    window.location.href = '/'
+    if (typeof window !== 'undefined') {
+      window.location.href = '/'
+    }
   } catch (error) {
     console.error('Logout error:', error)
   }
@@ -69,18 +78,35 @@ function* checkAuthSaga(): Generator<any, void, any> {
   
   const token = localStorage.getItem('token')
   const expiry = localStorage.getItem('auth_expiry')
+  const userStr = localStorage.getItem('user')
+  
+  console.log('checkAuthSaga - Found data:', { token, expiry, userStr })
   
   if (token && expiry && Date.now() < parseInt(expiry)) {
-    const user = JSON.parse(localStorage.getItem('user') || '{}')
-    yield put(loginSuccess({ user, token }))
+    try {
+      const user = JSON.parse(userStr || '{}')
+      console.log('checkAuthSaga - Restoring auth for user:', user)
+      yield put(loginSuccess({ user, token }))
+    } catch (error) {
+      console.error('checkAuthSaga - Error parsing user:', error)
+      // Don't logout on error, just continue without authentication
+      yield put(loginFailure('Failed to restore session'))
+    }
   } else if (token && expiry && Date.now() >= parseInt(expiry)) {
     // Token expired
+    console.log('checkAuthSaga - Token expired')
     yield put(logoutRequest())
+  } else {
+    console.log('checkAuthSaga - No valid auth found')
+    // Don't redirect when no auth exists
   }
 }
 
 export default function* authSaga() {
   yield takeLatest(loginRequest.type, loginSaga)
   yield takeLatest(logoutRequest.type, logoutSaga)
-  yield call(checkAuthSaga)
+  // Only run checkAuthSaga on client side to prevent hydration errors
+  if (typeof window !== 'undefined') {
+    yield call(checkAuthSaga)
+  }
 }

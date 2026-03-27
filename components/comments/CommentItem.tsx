@@ -34,14 +34,14 @@ export function CommentItem({ comment, onReply, level = 0 }: CommentItemProps) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
-              {comment.user.fullName[0]?.toUpperCase()}
+              {comment.user?.fullName?.[0]?.toUpperCase() || comment.user?.username?.[0]?.toUpperCase() || 'U'}
             </div>
             <div>
               <span className="font-semibold text-gray-900 dark:text-white">
-                {comment.user.fullName}
+                {comment.user?.fullName || comment.user?.username || 'Unknown User'}
               </span>
               <span className="text-gray-500 dark:text-gray-400 text-sm">
-                @{comment.user.username}
+                @{comment.user?.username || 'unknown'}
               </span>
             </div>
           </div>

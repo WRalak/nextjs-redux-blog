@@ -1,12 +1,6 @@
 // app/page.tsx
-import { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
-
-export const metadata: Metadata = {
-  title: 'Home | Modern Blog',
-  description: 'Welcome to Modern Blog - Your source for amazing content',
-}
 
 export default function HomePage() {
   return (
@@ -15,7 +9,7 @@ export default function HomePage() {
       <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-20">
         <div className="container-custom text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Welcome to Modern Blog
+            Welcome to Chemutai Blog
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
             Discover amazing stories, insights, and perspectives from around the world.

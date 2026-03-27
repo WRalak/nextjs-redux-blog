@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
+import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { usePosts } from '@/hooks/usePosts'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
@@ -16,7 +16,7 @@ interface PostFormData {
 }
 
 export default function EditPostPage() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useSimpleAuth()
   const { currentPost, loading, fetchPostById } = usePosts()
   const { id } = useParams()
   const router = useRouter()

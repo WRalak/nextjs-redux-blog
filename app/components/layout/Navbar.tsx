@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/hooks/useTheme'
-import { useAuth } from '@/hooks/useAuth'
+import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { MoonIcon, SunIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
@@ -14,7 +14,7 @@ export const Navbar = () => {
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, logout } = useSimpleAuth()
 
   useEffect(() => {
     setMounted(true)
@@ -41,7 +41,7 @@ export const Navbar = () => {
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
               <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                ModernBlog
+                Chemutai Blog
               </span>
             </Link>
           </div>
@@ -80,14 +80,9 @@ export const Navbar = () => {
                 </button>
               </div>
             ) : (
-              <>
-                <Link href="/login" className="btn-secondary text-sm">
-                  Login
-                </Link>
-                <Link href="/signup" className="btn-primary text-sm">
-                  Sign Up
-                </Link>
-              </>
+              <Link href="/login" className="btn-secondary text-sm">
+                Login
+              </Link>
             )}
           </div>
 
@@ -147,13 +142,6 @@ export const Navbar = () => {
                     onClick={() => setIsOpen(false)}
                   >
                     Login
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="block btn-primary text-sm text-center"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Sign Up
                   </Link>
                 </div>
               )}

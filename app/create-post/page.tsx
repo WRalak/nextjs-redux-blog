@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
+import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
@@ -15,7 +15,7 @@ interface PostFormData {
 }
 
 export default function CreatePostPage() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading } = useSimpleAuth()
   const router = useRouter()
   const [formData, setFormData] = useState<PostFormData>({
     title: '',
@@ -27,9 +27,12 @@ export default function CreatePostPage() {
   const [previewImage, setPreviewImage] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
+      console.log('CreatePost: Redirecting to login')
       router.push('/login')
+      return
     }
   }, [isAuthenticated, isLoading, router])
 
@@ -73,7 +76,7 @@ export default function CreatePostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.title.trim() || !formData.body.trim()) {
       alert('Please fill in all required fields')
       return
@@ -82,12 +85,30 @@ export default function CreatePostPage() {
     setIsSubmitting(true)
 
     try {
-      // TODO: Implement actual API call
-      console.log('Creating post:', formData)
-      
+      // Create post object
+      const postData = {
+        title: formData.title,
+        body: formData.body,
+        tags: formData.tags,
+        userId: user?.id || 1, // Use authenticated user ID or fallback
+        reactions: { likes: 0, dislikes: 0 },
+        views: 0,
+        createdAt: new Date().toISOString(),
+      }
+
+      // Add cover image if provided
+      if (formData.coverImage) {
+        // In a real app, you'd upload the image and get URL
+        // For now, we'll skip image handling
+        console.log('Image upload not implemented yet')
+      }
+
+      // Mock post creation for now
+      console.log('Creating post:', postData)
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       alert('Post created successfully!')
       router.push('/blog')
     } catch (error) {

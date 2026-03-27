@@ -11,7 +11,7 @@ import { ShareButton } from '@/components/blog/ShareButton'
 import { HeartIcon, ChatBubbleLeftIcon, EyeIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import { useState } from 'react'
-import { useAuth } from '@/hooks/useAuth'
+import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 
@@ -19,7 +19,7 @@ export default function BlogPostPage() {
   const { id } = useParams()
   const { currentPost, loading, fetchPostById, clearPost } = usePosts()
   const { comments, loading: commentsLoading, fetchComments, addComment } = useComments()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useSimpleAuth()
   const [newComment, setNewComment] = useState('')
   const [liked, setLiked] = useState(false)
   

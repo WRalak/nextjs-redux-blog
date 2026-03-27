@@ -4,24 +4,41 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '@/hooks/useAuth'
+import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, isLoading, error } = useAuth()
+  const { login, isLoading, error } = useSimpleAuth()
   const [formData, setFormData] = useState({
     username: '',
     password: '',
   })
-  
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    await login(formData.username, formData.password)
-    // Redirect happens in saga after successful login
+    setIsSubmitting(true)
+
+    try {
+      const success = login(formData.username, formData.password)
+      if (success) {
+        // Small delay to ensure cookie is set before navigation
+        setTimeout(() => {
+          // Check for redirect parameter
+          const urlParams = new URLSearchParams(window.location.search)
+          const redirectUrl = urlParams.get('redirect')
+          router.push(redirectUrl || '/dashboard')
+        }, 100)
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -82,9 +99,9 @@ export default function LoginPage() {
             <Button
               type="submit"
               fullWidth
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
             >
-              {isLoading ? <Spinner size="sm" /> : 'Sign in'}
+              {(isLoading || isSubmitting) ? <Spinner size="sm" /> : 'Sign in'}
             </Button>
           </div>
           
