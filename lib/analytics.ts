@@ -79,14 +79,14 @@ class Analytics {
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement
       if (target.tagName === 'A' && target.getAttribute('href')) {
-        this.trackEvent('link_click', 'engagement', 'Link Click', undefined, target.getAttribute('href'))
+        this.trackEvent('link_click', 'engagement', 'Link Click', undefined, target.getAttribute('href') || undefined)
       }
     })
 
     // Track form interactions
     document.addEventListener('submit', (e) => {
       const form = e.target as HTMLFormElement
-      this.trackEvent('form_submit', 'engagement', 'Form Submit', form.id)
+      this.trackEvent('form_submit', 'engagement', 'Form Submit', form.id ? parseInt(form.id) : undefined)
     })
 
     // Track search queries
