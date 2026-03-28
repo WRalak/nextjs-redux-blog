@@ -131,6 +131,22 @@ const postsSlice = createSlice({
       state.loading = false
       state.error = action.payload
     },
+    deletePostRequest: (state, action: PayloadAction<number>) => {
+      state.loading = true
+      state.error = null
+    },
+    deletePostSuccess: (state, action: PayloadAction<number>) => {
+      state.loading = false
+      state.posts = state.posts.filter(post => post.id !== action.payload)
+      state.total -= 1
+      if (state.currentPost?.id === action.payload) {
+        state.currentPost = null
+      }
+    },
+    deletePostFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false
+      state.error = action.payload
+    },
   },
 })
 
@@ -154,6 +170,9 @@ export const {
   updatePostRequest,
   updatePostSuccess,
   updatePostFailure,
+  deletePostRequest,
+  deletePostSuccess,
+  deletePostFailure,
 } = postsSlice.actions
 
 export default postsSlice.reducer

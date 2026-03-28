@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { createPostRequest } from '@/store/slices/postsSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { createPostRequest, createPostSuccess, createPostFailure } from '@/store/slices/postsSlice'
 import { Button } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
+import { RootState } from '@/store'
 
 interface CreatePostData {
   title: string
@@ -18,6 +19,7 @@ export function CreatePost() {
   const dispatch = useDispatch()
   const router = useRouter()
   const { user } = useSimpleAuth()
+  const { loading, error } = useSelector((state: RootState) => state.posts)
   const [formData, setFormData] = useState<CreatePostData>({
     title: '',
     body: '',
@@ -25,6 +27,8 @@ export function CreatePost() {
     userId: 1 // Default fallback
   })
   const [tagInput, setTagInput] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [shouldRedirect, setShouldRedirect] = useState(false)
 
   // Update userId when user becomes available
   useEffect(() => {
@@ -32,6 +36,15 @@ export function CreatePost() {
       setFormData(prev => ({ ...prev, userId: user.id }))
     }
   }, [user])
+
+  // Handle successful post creation
+  useEffect(() => {
+    // Only redirect if we were submitting and now we're done with no error
+    if (shouldRedirect && !loading && !error) {
+      setShouldRedirect(false)
+      router.push('/blog')
+    }
+  }, [loading, error, shouldRedirect, router])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,9 +54,10 @@ export function CreatePost() {
       return
     }
 
+    setIsSubmitting(true)
+    setShouldRedirect(true)
     console.log('Creating post with data:', formData)
     dispatch(createPostRequest(formData))
-    router.push('/blog')
   }
 
   const addTag = (e: React.KeyboardEvent) => {
@@ -133,17 +147,28 @@ export function CreatePost() {
         </div>
 
         <div className="flex gap-4">
-          <Button type="submit" variant="primary">
-            Publish Post
+          <Button 
+            type="submit" 
+            variant="primary"
+            disabled={loading || isSubmitting}
+          >
+            {loading || isSubmitting ? 'Publishing...' : 'Publish Post'}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => router.push('/blog')}
+            disabled={loading || isSubmitting}
           >
             Cancel
           </Button>
         </div>
+
+        {error && (
+          <div className="mt-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg">
+            Error: {error}
+          </div>
+        )}
       </form>
     </div>
   )

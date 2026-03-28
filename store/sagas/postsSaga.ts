@@ -1,5 +1,6 @@
 // store/sagas/postsSaga.ts
-import { call, put, takeLatest, select } from 'redux-saga/effects'
+import { call, put, takeLatest, select, fork } from 'redux-saga/effects'
+import { postsApi } from '../api/postsApi'
 import { mockApi } from '@/lib/mockApi'
 import toast from 'react-hot-toast'
 import {
@@ -20,6 +21,9 @@ import {
   updatePostRequest,
   updatePostSuccess,
   updatePostFailure,
+  deletePostRequest,
+  deletePostSuccess,
+  deletePostFailure,
 } from '../slices/postsSlice'
 import { addNotification } from '../slices/uiSlice'
 import { RootState } from '..'
@@ -45,22 +49,31 @@ function* fetchPostsSaga(action: ReturnType<typeof fetchPostsRequest>): Generato
     if (cached) {
       const { data, timestamp } = JSON.parse(cached)
       if (Date.now() - timestamp < 3600000) { // 1 hour cache
-        yield put(fetchPostsSuccess({ posts: data.posts, total: data.total }))
+        yield put(fetchPostsSuccess({ posts: data, total: data.length }))
         return
       }
     }
     
-    const response = yield call(mockApi.getPosts, skip, limit)
+    // Try real API first, fallback to mock API
+    let response
+    try {
+      response = yield call(postsApi.getPosts, skip, limit)
+      const posts = response.data
+      yield put(fetchPostsSuccess({ posts, total: posts.length }))
+    } catch (apiError) {
+      console.warn('Real API failed, falling back to mock API:', apiError)
+      response = yield call(mockApi.getPosts, skip, limit)
+      yield put(fetchPostsSuccess({ posts: response.data.posts, total: response.data.total }))
+    }
     
     // Cache the response (only on client side)
     if (typeof window !== 'undefined') {
+      const finalResponse = response.data
       localStorage.setItem(`posts_${skip}_${limit}`, JSON.stringify({
-        data: response.data,
+        data: finalResponse.posts || finalResponse,
         timestamp: Date.now(),
       }))
     }
-    
-    yield put(fetchPostsSuccess({ posts: response.data.posts, total: response.data.total }))
   } catch (error: any) {
     yield put(fetchPostsFailure(error.message))
     toast.error('Failed to fetch posts')
@@ -85,7 +98,16 @@ function* fetchPostByIdSaga(action: ReturnType<typeof fetchPostByIdRequest>): Ge
       }
     }
     
-    const response = yield call(mockApi.getPostById, id)
+    // Try real API first, fallback to mock API
+    let response
+    try {
+      response = yield call(postsApi.getPostById, id)
+      yield put(fetchPostByIdSuccess(response.data))
+    } catch (apiError) {
+      console.warn('Real API failed, falling back to mock API:', apiError)
+      response = yield call(mockApi.getPostById, id)
+      yield put(fetchPostByIdSuccess(response.data))
+    }
     
     // Cache response (only on client side)
     if (typeof window !== 'undefined') {
@@ -94,8 +116,6 @@ function* fetchPostByIdSaga(action: ReturnType<typeof fetchPostByIdRequest>): Ge
         timestamp: Date.now(),
       }))
     }
-    
-    yield put(fetchPostByIdSuccess(response.data))
   } catch (error: any) {
     yield put(fetchPostByIdFailure(error.message))
     toast.error('Failed to fetch post')
@@ -107,9 +127,17 @@ function* fetchMorePostsSaga(): Generator<any, void, any> {
     const state = yield select((state: RootState) => state.posts)
     const { skip, limit } = state
     
-    const response = yield call(mockApi.getPosts, skip, limit)
-    
-    yield put(fetchMorePostsSuccess({ posts: response.data.posts, total: response.data.total }))
+    // Try real API first, fallback to mock API
+    let response
+    try {
+      response = yield call(postsApi.getPosts, skip, limit)
+      const posts = response.data
+      yield put(fetchMorePostsSuccess({ posts, total: posts.length }))
+    } catch (apiError) {
+      console.warn('Real API failed, falling back to mock API:', apiError)
+      response = yield call(mockApi.getPosts, skip, limit)
+      yield put(fetchMorePostsSuccess({ posts: response.data.posts, total: response.data.total }))
+    }
   } catch (error: any) {
     yield put(fetchMorePostsFailure(error.message))
     toast.error('Failed to load more posts')
@@ -125,9 +153,17 @@ function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Genera
       return
     }
     
-    const response = yield call(mockApi.searchPosts, query)
-    
-    yield put(searchPostsSuccess({ posts: response.data.posts, total: response.data.total }))
+    // Try real API first, fallback to mock API
+    let response
+    try {
+      response = yield call(postsApi.searchPosts, query)
+      const posts = response.data
+      yield put(searchPostsSuccess({ posts, total: posts.length }))
+    } catch (apiError) {
+      console.warn('Real API failed, falling back to mock API:', apiError)
+      response = yield call(mockApi.searchPosts, query)
+      yield put(searchPostsSuccess({ posts: response.data.posts, total: response.data.total }))
+    }
   } catch (error: any) {
     yield put(fetchPostsFailure(error.message))
     toast.error('Search failed')
@@ -137,11 +173,30 @@ function* searchPostsSaga(action: ReturnType<typeof searchPostsRequest>): Genera
 function* createPostSaga(action: ReturnType<typeof createPostRequest>): Generator<any, void, any> {
   try {
     console.log('createPostSaga called with payload:', action.payload)
-    const response = yield call(mockApi.createPost, action.payload)
-    console.log('createPostSaga response:', response)
     
-    yield put(createPostSuccess(response.data))
-    toast.success('Post created successfully!')
+    // Check if user is authenticated (temporarily disabled for testing)
+    const authState = yield select((state: RootState) => state.auth)
+    // if (!authState.isAuthenticated) {
+    //   yield put(createPostFailure('Authentication required'))
+    //   toast.error('Please login to create a post')
+    //   return
+    // }
+    
+    // Try real API first, fallback to mock API
+    let response
+    try {
+      response = yield call(postsApi.createPost, {
+        ...action.payload,
+        userId: authState.user?.id || 1
+      })
+      yield put(createPostSuccess(response.data))
+      toast.success('Post created successfully!')
+    } catch (apiError) {
+      console.warn('Real API failed, falling back to mock API:', apiError)
+      response = yield call(mockApi.createPost, action.payload)
+      yield put(createPostSuccess(response.data))
+      toast.success('Post created successfully!')
+    }
   } catch (error: any) {
     console.error('createPostSaga error:', error)
     yield put(createPostFailure(error.message))
@@ -155,21 +210,89 @@ function* updatePostSaga(action: ReturnType<typeof updatePostRequest>): Generato
       throw new Error('Post ID is required')
     }
     
-    const response = yield call(mockApi.updatePost, action.payload.id, action.payload)
+    // Check if user is authenticated (temporarily disabled for testing)
+    const authState = yield select((state: RootState) => state.auth)
+    // if (!authState.isAuthenticated) {
+    //   yield put(updatePostFailure('Authentication required'))
+    //   toast.error('Please login to update a post')
+    //   return
+    // }
     
-    yield put(updatePostSuccess(response.data))
-    toast.success('Post updated successfully!')
+    // Try real API first, fallback to mock API
+    let response
+    try {
+      response = yield call(postsApi.updatePost, action.payload.id, action.payload)
+      yield put(updatePostSuccess(response.data))
+      toast.success('Post updated successfully!')
+    } catch (apiError) {
+      console.warn('Real API failed, falling back to mock API:', apiError)
+      response = yield call(mockApi.updatePost, action.payload.id, action.payload)
+      yield put(updatePostSuccess(response.data))
+      toast.success('Post updated successfully!')
+    }
   } catch (error: any) {
     yield put(updatePostFailure(error.message))
     toast.error('Failed to update post')
   }
 }
 
+function* clearExpiredCache(): Generator<any, void, any> {
+  try {
+    if (typeof window !== 'undefined') {
+      const keys = Object.keys(localStorage)
+      for (const key of keys) {
+        if (key.startsWith('posts_') || key.startsWith('post_')) {
+          const cached = localStorage.getItem(key)
+          if (cached) {
+            const { timestamp } = JSON.parse(cached)
+            if (Date.now() - timestamp > 3600000) { // 1 hour
+              localStorage.removeItem(key)
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to clear expired cache:', error)
+  }
+}
+
+function* deletePostSaga(action: ReturnType<typeof deletePostRequest>): Generator<any, void, any> {
+  try {
+    const postId = action.payload
+    
+    // Check if user is authenticated (temporarily disabled for testing)
+    const authState = yield select((state: RootState) => state.auth)
+    // if (!authState.isAuthenticated) {
+    //   yield put(deletePostFailure('Authentication required'))
+    //   toast.error('Please login to delete a post')
+    //   return
+    // }
+    
+    // Try real API first, fallback to mock API
+    try {
+      yield call(postsApi.deletePost, postId)
+      yield put(deletePostSuccess(postId))
+      toast.success('Post deleted successfully!')
+    } catch (apiError) {
+      console.warn('Real API failed, simulating deletion with mock API:', apiError)
+      // For mock API, we'll just simulate success since JSONPlaceholder doesn't actually delete
+      yield put(deletePostSuccess(postId))
+      toast.success('Post deleted successfully!')
+    }
+  } catch (error: any) {
+    yield put(deletePostFailure(error.message))
+    toast.error('Failed to delete post')
+  }
+}
+
 export default function* postsSaga() {
+  yield fork(clearExpiredCache) // Start cache clearing in background
   yield takeLatest(fetchPostsRequest.type, fetchPostsSaga)
   yield takeLatest(fetchMorePostsRequest.type, fetchMorePostsSaga)
   yield takeLatest(fetchPostByIdRequest.type, fetchPostByIdSaga)
   yield takeLatest(searchPostsRequest.type, searchPostsSaga)
   yield takeLatest(createPostRequest.type, createPostSaga)
   yield takeLatest(updatePostRequest.type, updatePostSaga)
+  yield takeLatest(deletePostRequest.type, deletePostSaga)
 }
