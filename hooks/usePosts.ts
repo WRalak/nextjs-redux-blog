@@ -22,7 +22,11 @@ export const usePosts = () => {
     (state: RootState) => state.posts
   )
 
+  // Debug logging
+  console.log('usePosts hook state:', { posts, loading, loadingMore, hasMore, error, postsLength: posts.length })
+
   const fetchPosts = (page: number = 1) => {
+    console.log('fetchPosts called with page:', page)
     const skip = (page - 1) * limit
     dispatch(fetchPostsRequest({ skip, limit }))
   }

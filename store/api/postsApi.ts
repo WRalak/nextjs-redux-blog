@@ -2,6 +2,13 @@ import axios from 'axios'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jsonplaceholder.typicode.com'
 
+interface PostData {
+  title: string
+  body: string
+  userId: number
+  tags?: string[]
+}
+
 export const postsApi = {
   getPosts: async (skip = 0, limit = 10) => {
     const response = await axios.get(`${API_BASE_URL}/posts?_start=${skip}&_limit=${limit}`)
@@ -18,12 +25,12 @@ export const postsApi = {
     return response
   },
 
-  createPost: async (postData: any) => {
+  createPost: async (postData: PostData) => {
     const response = await axios.post(`${API_BASE_URL}/posts`, postData)
     return response
   },
 
-  updatePost: async (id: number, postData: any) => {
+  updatePost: async (id: number, postData: Partial<PostData>) => {
     const response = await axios.put(`${API_BASE_URL}/posts/${id}`, postData)
     return response
   },

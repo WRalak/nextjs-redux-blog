@@ -14,7 +14,8 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { useDispatch } from 'react-redux'
 import { updatePostRequest } from '@/store/slices/postsSlice'
-import { LazyLoad, LazyCommentItem, LazyShareButton } from '@/components/ui/LazyLoad'
+// Temporarily remove lazy loading to debug
+// import { LazyLoad, LazyCommentItem, LazyShareButton } from '@/components/ui/LazyLoad'
 
 export default function BlogPostPage() {
   const { id } = useParams()
@@ -77,7 +78,7 @@ export default function BlogPostPage() {
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
           <div className="container-custom">
             <div className="flex flex-wrap gap-2 mb-4">
-              {currentPost.tags.map((tag) => (
+              {(currentPost.tags || []).map((tag) => (
                 <span
                   key={tag}
                   className="px-3 py-1 text-sm bg-white bg-opacity-20 rounded-full backdrop-blur-sm"
@@ -108,7 +109,7 @@ export default function BlogPostPage() {
                 ) : (
                   <HeartIcon className="h-6 w-6" />
                 )}
-                <span>{currentPost.reactions.likes + (liked ? 1 : 0)}</span>
+                <span>{(currentPost.reactions?.likes || 0) + (liked ? 1 : 0)}</span>
               </button>
               <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                 <ChatBubbleLeftIcon className="h-6 w-6" />
@@ -116,15 +117,16 @@ export default function BlogPostPage() {
               </div>
               <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                 <EyeIcon className="h-6 w-6" />
-                <span>{currentPost.views}</span>
+                <span>{currentPost.views || 0}</span>
               </div>
-              <LazyLoad>
+              {/* Share button removed for debugging */}
+              {/* <LazyLoad>
                 <LazyShareButton
                   url={typeof window !== 'undefined' ? window.location.href : ''}
                   title={currentPost.title}
                   description={currentPost.body.substring(0, 150)}
                 />
-              </LazyLoad>
+              </LazyLoad> */}
             </div>
             
             {/* Author Controls */}
@@ -194,12 +196,28 @@ export default function BlogPostPage() {
             ) : (
               <div className="space-y-6">
                 {comments.map((comment) => (
-                  <LazyLoad key={comment.id}>
-                    <LazyCommentItem
-                      comment={comment}
-                      onReply={handleReply}
-                    />
-                  </LazyLoad>
+                  <div key={comment.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                        <span className="text-orange-600 dark:text-orange-300 text-sm font-medium">
+                          {comment.user?.username?.charAt(0).toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {comment.user?.fullName || 'Anonymous'}
+                          </span>
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                            {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Recently'}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300">
+                          {comment.body}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

@@ -39,24 +39,40 @@ export function CreatePost() {
 
   // Handle successful post creation
   useEffect(() => {
+    console.log('CreatePost useEffect:', { loading, error, shouldRedirect })
     // Only redirect if we were submitting and now we're done with no error
     if (shouldRedirect && !loading && !error) {
+      console.log('Redirecting to blog...')
       setShouldRedirect(false)
+      setIsSubmitting(false)
       router.push('/blog')
+    }
+    
+    // Reset submitting state on error
+    if (shouldRedirect && !loading && error) {
+      setShouldRedirect(false)
+      setIsSubmitting(false)
     }
   }, [loading, error, shouldRedirect, router])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('🔍 Form validation check:', {
+      title: formData.title.trim(),
+      body: formData.body.trim(),
+      titleValid: !!formData.title.trim(),
+      bodyValid: !!formData.body.trim()
+    })
+    
     if (!formData.title.trim() || !formData.body.trim()) {
       alert('Please fill in title and content')
       return
     }
 
+    console.log('📤 Submitting form with data:', formData)
     setIsSubmitting(true)
     setShouldRedirect(true)
-    console.log('Creating post with data:', formData)
     dispatch(createPostRequest(formData))
   }
 

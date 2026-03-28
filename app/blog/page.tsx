@@ -9,7 +9,10 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useSimpleAuth } from '@/hooks/useSimpleAuth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LazyLoad, LazyPostCard, LazySearchBar } from '@/components/ui/LazyLoad'
+// Temporarily remove lazy loading to debug
+// import { LazyLoad, LazyPostCard, LazySearchBar } from '@/components/ui/LazyLoad'
+import { PostCard } from '@/components/blog/PostCard'
+import { SearchBar } from '@/components/blog/SearchBar'
 
 export default function BlogPage() {
   const { posts, loading, loadingMore, hasMore, error, fetchPosts, searchPosts, fetchMorePosts } = usePosts()
@@ -22,7 +25,11 @@ export default function BlogPage() {
     fetchNextPage: fetchMorePosts,
   })
   
+  // Debug logging
+  console.log('BlogPage state:', { posts, loading, loadingMore, hasMore, error, isAuthenticated })
+  
   useEffect(() => {
+    console.log('Fetching initial posts...')
     fetchPosts(1)
   }, [])
   
@@ -42,6 +49,7 @@ export default function BlogPage() {
   }, [searchQuery])
   
   if (loading && posts.length === 0) {
+    console.log('Showing initial loading spinner...')
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <Spinner size="lg" />
@@ -50,6 +58,7 @@ export default function BlogPage() {
   }
   
   if (error) {
+    console.log('Showing error:', error)
     return (
       <div className="container-custom py-12">
         <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 p-4 rounded-lg">
@@ -85,9 +94,7 @@ export default function BlogPage() {
 
         {/* Search Bar */}
         <div className="mb-8">
-          <LazyLoad>
-            <LazySearchBar />
-          </LazyLoad>
+          <SearchBar />
         </div>
 
         {/* Posts Grid */}
@@ -108,9 +115,7 @@ export default function BlogPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <LazyLoad key={post.id}>
-                <LazyPostCard post={post} />
-              </LazyLoad>
+              <PostCard key={post.id} post={post} />
             ))}
           </div>
         )}

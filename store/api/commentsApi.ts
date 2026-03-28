@@ -9,7 +9,13 @@ export const commentsApi = {
   },
 
   addComment: async (postId: number, comment: string, parentId?: number) => {
-    const payload: any = {
+    const payload: {
+      postId: number
+      body: string
+      name: string
+      email: string
+      parentId?: number
+    } = {
       postId,
       body: comment,
       name: 'Current User',

@@ -47,7 +47,7 @@ export function PostCard({ post }: PostCardProps) {
         </p>
         
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-          {post.tags.slice(0, 3).map((tag) => (
+          {post.tags?.slice(0, 3).map((tag) => (
             <span
               key={tag}
               className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full whitespace-nowrap"
@@ -55,7 +55,7 @@ export function PostCard({ post }: PostCardProps) {
               #{tag}
             </span>
           ))}
-          {post.tags.length > 3 && (
+          {post.tags && post.tags.length > 3 && (
             <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
               +{post.tags.length - 3}
             </span>
@@ -66,7 +66,7 @@ export function PostCard({ post }: PostCardProps) {
           <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="flex items-center space-x-1">
               <HeartIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>{post.reactions.likes}</span>
+              <span>{post.reactions?.likes || 0}</span>
             </div>
             <div className="flex items-center space-x-1">
               <ChatBubbleLeftIcon className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -74,7 +74,7 @@ export function PostCard({ post }: PostCardProps) {
             </div>
             <div className="flex items-center space-x-1">
               <EyeIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>{post.views}</span>
+              <span>{post.views || 0}</span>
             </div>
           </div>
           

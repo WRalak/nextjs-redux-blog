@@ -29,7 +29,7 @@ export const PostCard = ({ post }: PostCardProps) => {
         </div>
         <div className="p-6">
           <div className="flex flex-wrap gap-2 mb-3">
-            {post.tags.slice(0, 3).map((tag) => (
+            {post.tags?.slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 className="px-2 py-1 text-xs font-medium bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full"
@@ -48,7 +48,7 @@ export const PostCard = ({ post }: PostCardProps) => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
                 <HeartIcon className="h-4 w-4" />
-                <span>{post.reactions.likes}</span>
+                <span>{post.reactions?.likes || 0}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <ChatBubbleLeftIcon className="h-4 w-4" />

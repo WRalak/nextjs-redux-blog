@@ -59,6 +59,13 @@ const mockPosts = [
   }
 ];
 
+interface PostData {
+  title: string
+  body: string
+  userId: number
+  tags?: string[]
+}
+
 export const mockApi = {
   getPosts: async (skip = 0, limit = 10) => {
     // Simulate network delay
@@ -105,7 +112,7 @@ export const mockApi = {
     };
   },
 
-  createPost: async (postData: any) => {
+  createPost: async (postData: PostData) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     console.log('mockApi.createPost called with:', postData)
@@ -117,8 +124,10 @@ export const mockApi = {
     const newPost = {
       id: newId,
       ...postData,
+      tags: postData.tags || [],
       reactions: { likes: 0, dislikes: 0 },
       views: 0,
+      image: `https://picsum.photos/seed/post${newId}/400/250.jpg`,
       createdAt: new Date().toISOString()
     };
     
@@ -129,7 +138,7 @@ export const mockApi = {
     return { data: newPost };
   },
 
-  updatePost: async (id: number, postData: any) => {
+  updatePost: async (id: number, postData: Partial<PostData>) => {
     await new Promise(resolve => setTimeout(resolve, 800));
     
     const postIndex = mockPosts.findIndex(p => p.id === id);
